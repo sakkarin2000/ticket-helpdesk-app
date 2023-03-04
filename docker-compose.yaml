@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./server
+    container_name: backend
+    depends_on:
+      - db
+    restart: unless-stopped
+    hostname: backend
+    tty: true
+    environment:
+      - DATABASE_URL=db
+      - DBUSER=helpdesk_admin
+      - DBPASSWORD=tick@dminP@ss
+    ports:
+      - 5000:5000
+    networks:
+      - app-network
+
+  frontend:
+    build: ./client
+    container_name: frontend
+    restart: unless-stopped
+    hostname: frontend
+    tty: true
+    networks:
+      - app-network
+    ports:
+      - 3000:3000
+
+  db:
+    image:  postgres
+    restart: always
+    container_name: db
+    hostname: db
+    environment:
+      POSTGRES_USER: helpdesk_admin
+      POSTGRES_PASSWORD: tick@dminP@ss
+    ports:
+      - 5432:5432
+    networks:
+      - app-network
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge

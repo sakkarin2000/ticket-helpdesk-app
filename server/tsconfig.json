@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "es2018",
+        "module": "NodeNext",
+        "esModuleInterop": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "sourceMap": true
+    },
+    "ts-node": {
+        "esm": true
+    },
+    "include": [
+        "./src/**/*.ts"],
+    "exclude": ["node_modules"]
+        
+}
