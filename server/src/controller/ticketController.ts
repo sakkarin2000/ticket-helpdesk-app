@@ -8,7 +8,6 @@ const getTicket = async (req: Request, res: Response) => {
     const status = parseInt(req.query.status as string, 10);
     const offset = parseInt(req.query.offset as string, 10);
 
-    console.log(typeof status);
     if (isNaN(limit) || isNaN(offset)) {
       res.status(400).send('Bad Request, Required Limit and Offset');
       return;
