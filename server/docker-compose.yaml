@@ -13,7 +13,7 @@ services:
       - .:/home/node/app
       - /home/node/app/node_modules
     environment:
-      - DATABASE_URL=localhost:5432
+      - DATABASE_URL=192.168.1.37
       - DBUSER=helpdesk_admin
       - DBPASSWORD=tick@dminP@ss
     command: npm run dev
