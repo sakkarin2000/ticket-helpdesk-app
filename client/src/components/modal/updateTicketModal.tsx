@@ -111,20 +111,10 @@ export default function UpdateTicketModal({
                     console.log(e.target.value);
                     handleChange(e.target.value, "status");
                   }}
-                  defaultValue={
-                    ticketToEdit.status == -1
-                      ? "Reject"
-                      : ticketToEdit.status == 0
-                      ? "Pending"
-                      : ticketToEdit.status == 1
-                      ? "Accept"
-                      : ticketToEdit.status == 2
-                      ? "Resolved"
-                      : "Unknown"
-                  }
+                  defaultValue={ticketToEdit.status}
                 >
                   <option disabled selected className="text-[14px]">
-                    เลือกคำตอบที่ถูกต้อง
+                    Select Status
                   </option>
                   {TicketStatus.map((ticketstatus) => (
                     <option

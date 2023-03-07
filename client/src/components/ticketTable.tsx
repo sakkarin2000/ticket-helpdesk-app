@@ -3,6 +3,7 @@ import { coreContext } from "../stores/context";
 import { useContext, useEffect, useState } from "react";
 import { Observer } from "mobx-react";
 import { MdModeEditOutline } from "react-icons/md";
+import { GrStatusGoodSmall } from "react-icons/gr";
 import { putData, getData } from "../../utils/query";
 import { useInfiniteQuery } from "react-query";
 
@@ -11,14 +12,20 @@ import LoadingForTable from "./LoadingForTable";
 import { formatDate } from "../../utils/formatDate";
 import UpdateTicketModal from "./modal/updateTicketModal";
 
-export default function TicketTable() {
+interface TicketTableProps {
+  count_ticket: number;
+}
+export default function TicketTable({ count_ticket }: TicketTableProps) {
   const ticket_mutation = putData("api/v1/ticket");
   const [limit, setLimit] = useState(10);
   const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
   const [offset, setOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState("any");
   const [ticketList, setTicketList] = useState<Ticket[]>([]);
-  const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data[]>([]);
+  const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
+    {} as Ticket_Meta_Data
+  );
+
   const {
     data: ticketData,
     status: ticketStatus,
@@ -31,12 +38,17 @@ export default function TicketTable() {
   const [showEditTicketModal, setShowEditTicketModal] = useState(false);
 
   useEffect(() => {
-    if (ticketData && ticketIsSuccess) {
+    if (ticketData && ticketStatus == "success") {
       setTicketList(ticketData.data);
       setTicketMetaData(ticketData.meta);
     }
-  }, [ticketData, ticketIsSuccess]);
+  }, [ticketData, ticketStatus]);
 
+  useEffect(() => {
+    if (count_ticket != ticketList.length) {
+      ticketRefetch();
+    }
+  }, [count_ticket, ticketIsSuccess]);
   const handleChange = (
     value: string,
     attribute: "title" | "description" | "status" | "contact_info"
@@ -114,13 +126,13 @@ export default function TicketTable() {
                     scope="col"
                     className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
-                    Created at
+                    Created At
                   </th>
                   <th
                     scope="col"
                     className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
-                    Updated at
+                    Updated At
                   </th>
                   <th
                     scope="col"
@@ -176,15 +188,41 @@ export default function TicketTable() {
                           {formatDate(new Date(ticket.updated_at))}
                         </td>
                         <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                          {ticket.status == -1
-                            ? "Reject"
-                            : ticket.status == 0
-                            ? "Pending"
-                            : ticket.status == 1
-                            ? "Accept"
-                            : ticket.status == 2
-                            ? "Resolved"
-                            : "Unknown"}
+                          {ticket.status == -1 ? (
+                            <div className="flex gap-2 items-center">
+                              <div className="text-red-500 ">
+                                {" "}
+                                <GrStatusGoodSmall />
+                              </div>{" "}
+                              <a>Reject</a>
+                            </div>
+                          ) : ticket.status == 0 ? (
+                            <div className="flex gap-2 items-center">
+                              <div className="text-yellow-500 ">
+                                {" "}
+                                <GrStatusGoodSmall />
+                              </div>{" "}
+                              <a>Pending</a>
+                            </div>
+                          ) : ticket.status == 1 ? (
+                            <div className="flex gap-2 items-center">
+                              <div className="text-green-500 ">
+                                {" "}
+                                <GrStatusGoodSmall />
+                              </div>{" "}
+                              <a>Accept</a>
+                            </div>
+                          ) : ticket.status == 2 ? (
+                            <div className="flex gap-2 items-center">
+                              <div className="text-blue-500 ">
+                                {" "}
+                                <GrStatusGoodSmall />
+                              </div>{" "}
+                              <a>Resolved</a>
+                            </div>
+                          ) : (
+                            "Unknown"
+                          )}
                         </td>
                         <td className="text-xl text-[#C10000] font-light px-6 py-4 whitespace-nowrap cursor-pointer">
                           <MdModeEditOutline

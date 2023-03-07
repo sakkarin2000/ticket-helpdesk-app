@@ -106,9 +106,9 @@ export default function LandingPage() {
               </h1>
             </div>
           </section>
-          <section ref={sectionRef} className="h-screen">
+          <section ref={sectionRef} className="h-fit">
             <div>
-              <TicketTable />
+              <TicketTable count_ticket={totalTicket} />
             </div>
           </section>
           {showCreateTicketModal ? (
