@@ -11,8 +11,13 @@ export default function LandingPage() {
   const sectionRef = useRef<null | HTMLElement>(null);
   const mutation = postData("api/v1/ticket");
   const [totalTicket, setTotalTicket] = useState(0);
-  const { data, status, isSuccess, isLoading, refetch } =
-    getData(`api/v1/total-ticket`);
+  const {
+    data: totalTicketData,
+    status: totalTicketStatus,
+    isSuccess: totalTicketIsSuccess,
+    isLoading: totalTicketIsLoading,
+    refetch,
+  } = getData(`api/v1/total-ticket`);
   const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -22,10 +27,10 @@ export default function LandingPage() {
     sectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
   useEffect(() => {
-    if (data && isSuccess) {
-      setTotalTicket(data.total_ticket);
+    if (totalTicketData && totalTicketIsSuccess) {
+      setTotalTicket(totalTicketData.total_ticket);
     }
-  }, [data, isSuccess]);
+  }, [totalTicketData, totalTicketIsSuccess]);
 
   const handleSubmit = (e: any) => {
     e.preventDefault();

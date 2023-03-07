@@ -1,62 +1,89 @@
 import styles from "@/styles/Home.module.css";
-import CreateTicketModal from "@/components/modal/createTicketModal";
 import { coreContext } from "../stores/context";
 import { useContext, useEffect, useState } from "react";
 import { Observer } from "mobx-react";
 import { MdModeEditOutline } from "react-icons/md";
 import { putData, getData } from "../../utils/query";
+import { useInfiniteQuery } from "react-query";
+
 import { Ticket, Ticket_Meta_Data } from "@/models/Ticket";
 import LoadingForTable from "./LoadingForTable";
 import { formatDate } from "../../utils/formatDate";
+import UpdateTicketModal from "./modal/updateTicketModal";
 
 export default function TicketTable() {
-  const ticket_info_mutation = putData("api/v1/update-ticket-info");
+  const ticket_mutation = putData("api/v1/ticket");
   const [limit, setLimit] = useState(10);
+  const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
   const [offset, setOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState("any");
-  const [ticketData, setTicketData] = useState<Ticket[]>([]);
+  const [ticketList, setTicketList] = useState<Ticket[]>([]);
   const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data[]>([]);
-  const { data, status, isSuccess, isLoading, refetch } = getData(
+  const {
+    data: ticketData,
+    status: ticketStatus,
+    isSuccess: ticketIsSuccess,
+    isLoading: ticketIsLoading,
+    refetch: ticketRefetch,
+  } = getData(
     `api/v1/ticket?limit=${limit}&offset=${offset}&status=${statusFilter}`
   );
   const [showEditTicketModal, setShowEditTicketModal] = useState(false);
-  const [ticketIDToEdit, setTicketIDToEdit] = useState("");
-  const [titleToEdit, setTitleToEdit] = useState("");
-  const [descriptionToEdit, setDescriptionToEdit] = useState("");
-  const [contactInfoToEdit, setContactInfoToEdit] = useState("");
-  const [statusToEdit, setStatusToEdit] = useState("");
 
   useEffect(() => {
-    if (data && isSuccess) {
-      setTicketData(data.data);
-      setTicketMetaData(data.meta);
+    if (ticketData && ticketIsSuccess) {
+      setTicketList(ticketData.data);
+      setTicketMetaData(ticketData.meta);
     }
-  }, [data, isSuccess]);
+  }, [ticketData, ticketIsSuccess]);
+
+  const handleChange = (
+    value: string,
+    attribute: "title" | "description" | "status" | "contact_info"
+  ) => {
+    var tempTicketToEdit = ticketToEdit;
+    if (attribute == "title") {
+      tempTicketToEdit.title = value;
+    }
+    if (attribute == "description") {
+      tempTicketToEdit.description = value;
+    }
+    if (attribute == "contact_info") {
+      tempTicketToEdit.contact_info = value;
+    }
+    if (attribute == "status") {
+      tempTicketToEdit.status = parseInt(value);
+    }
+    setTicketToEdit(tempTicketToEdit);
+    console.log(ticketToEdit);
+  };
 
   const handleSubmitUpdateInfo = (e: any) => {
     e.preventDefault();
     if (
-      titleToEdit &&
-      descriptionToEdit &&
-      contactInfoToEdit &&
-      ticketIDToEdit
+      ticketToEdit.title &&
+      ticketToEdit.description &&
+      ticketToEdit.contact_info &&
+      ticketToEdit.ticket_id &&
+      ticketToEdit.status
     ) {
-      ticket_info_mutation.mutate({
-        title: titleToEdit,
-        description: descriptionToEdit,
-        contact_info: contactInfoToEdit,
-        ticket_id: ticketIDToEdit,
+      ticket_mutation.mutate({
+        title: ticketToEdit.title,
+        description: ticketToEdit.description,
+        contact_info: ticketToEdit.contact_info,
+        ticket_id: ticketToEdit.ticket_id,
+        status: ticketToEdit.status,
       });
     }
   };
 
   useEffect(() => {
-    if (ticket_info_mutation.isSuccess) {
-      refetch();
+    if (ticket_mutation.isSuccess) {
+      ticketRefetch();
       setShowEditTicketModal(false);
-      ticket_info_mutation.reset();
+      ticket_mutation.reset();
     }
-  }, [ticket_info_mutation.isSuccess]);
+  }, [ticket_mutation.isSuccess]);
   return (
     <Observer>
       {() => (
@@ -108,7 +135,7 @@ export default function TicketTable() {
                 </tr>
               </thead>
               <tbody>
-                {status == "error" ? (
+                {ticketStatus == "error" ? (
                   <LoadingForTable
                     numCols={6}
                     numRows={1}
@@ -118,7 +145,7 @@ export default function TicketTable() {
                     }
                   />
                 ) : null}
-                {status == "loading" ? (
+                {ticketStatus == "loading" ? (
                   <LoadingForTable
                     numCols={6}
                     numRows={6}
@@ -127,10 +154,10 @@ export default function TicketTable() {
                   />
                 ) : null}
 
-                {status == "success"
-                  ? ticketData.map((ticket, index) => (
+                {ticketStatus == "success"
+                  ? ticketList.map((ticket, index) => (
                       <tr
-                        key={ticket._id}
+                        key={ticket.ticket_id}
                         className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
                       >
                         <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
@@ -160,7 +187,20 @@ export default function TicketTable() {
                             : "Unknown"}
                         </td>
                         <td className="text-xl text-[#C10000] font-light px-6 py-4 whitespace-nowrap cursor-pointer">
-                          <MdModeEditOutline />
+                          <MdModeEditOutline
+                            onClick={() => {
+                              setTicketToEdit({
+                                ticket_id: ticket.ticket_id,
+                                title: ticket.title,
+                                description: ticket.description,
+                                contact_info: ticket.contact_info,
+                                created_at: ticket.created_at,
+                                updated_at: ticket.updated_at,
+                                status: ticket.status,
+                              });
+                              setShowEditTicketModal(true);
+                            }}
+                          />
                         </td>
                       </tr>
                     ))
@@ -168,6 +208,16 @@ export default function TicketTable() {
               </tbody>
             </table>
           </div>
+          {showEditTicketModal ? (
+            <UpdateTicketModal
+              handleSubmit={handleSubmitUpdateInfo}
+              handleChange={handleChange}
+              ticketToEdit={ticketToEdit}
+              handleHideModal={() => {
+                setShowEditTicketModal(false);
+              }}
+            />
+          ) : null}
         </>
       )}
     </Observer>

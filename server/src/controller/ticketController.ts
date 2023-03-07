@@ -83,6 +83,33 @@ const updateTicketInfo = async (req: Request, res: Response) => {
   }
 };
 
+const updateTicketInfoAndStatus = async (req: Request, res: Response) => {
+  try {
+    const { title, description, contact_info, ticket_id, status } = req.body;
+
+    if (!ticket_id) {
+      res.status(400).send('Bad Request, Required Ticket ID');
+      return;
+    }
+
+    const result = await pool.query(queries.update_ticket_info_and_status, [
+      title,
+      description,
+      contact_info,
+      status,
+      ticket_id,
+    ]);
+    if (result.rowCount === 1) {
+      res.status(201).send('Update ticket info & status success');
+    } else if (result.rowCount === 0) {
+      res.status(404).send('Bad Request, Ticket ID not found');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error, Can't update ticket info & status");
+  }
+};
+
 const updateTicketStatus = async (req: Request, res: Response) => {
   try {
     const { status, ticket_id } = req.body;
@@ -115,4 +142,5 @@ const getCountTicket = async (req: Request, res: Response) => {
     res.status(500).send("Error, Can't get ticket");
   }
 };
-export { getTicket, createTicket, updateTicketInfo, updateTicketStatus, getCountTicket };
+
+export { getTicket, createTicket, updateTicketInfo, updateTicketStatus, getCountTicket, updateTicketInfoAndStatus };

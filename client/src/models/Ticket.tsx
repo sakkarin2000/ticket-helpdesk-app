@@ -1,5 +1,5 @@
 export interface Ticket {
-  _id: string;
+  ticket_id: string;
   title: string;
   description: string;
   contact_info: string;
@@ -14,3 +14,22 @@ export interface Ticket_Meta_Data {
   count: number;
   total: number;
 }
+
+export const TicketStatus = [
+  {
+    id: 0,
+    status_name_en: "pending",
+  },
+  {
+    id: -1,
+    status_name_en: "rejected",
+  },
+  {
+    id: 2,
+    status_name_en: "resolved",
+  },
+  {
+    id: 1,
+    status_name_en: "accepted",
+  },
+];
