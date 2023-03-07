@@ -102,4 +102,17 @@ const updateTicketStatus = async (req: Request, res: Response) => {
     res.status(500).send("Error, Can't update ticket status");
   }
 };
-export { getTicket, createTicket, updateTicketInfo, updateTicketStatus };
+
+const getCountTicket = async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(queries.get_count_ticket_total);
+    const total = result.rows[0].count;
+    res.status(200).send({
+      total_ticket: total,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error, Can't get ticket");
+  }
+};
+export { getTicket, createTicket, updateTicketInfo, updateTicketStatus, getCountTicket };
