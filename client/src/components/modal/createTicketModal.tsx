@@ -1,8 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-
-import { coreContext } from "../../stores/context";
 import { AiOutlineClose } from "react-icons/ai";
-import { postData } from "../../../utils/query";
 
 interface CreateTicketModalProps {
   handleSubmit: Function;

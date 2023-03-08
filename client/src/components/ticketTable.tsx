@@ -1,16 +1,12 @@
-import styles from "@/styles/Home.module.css";
-import { coreContext } from "../stores/context";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Observer } from "mobx-react";
 import { MdModeEditOutline } from "react-icons/md";
 import { GrStatusGoodSmall } from "react-icons/gr";
 import { putData, getData } from "../../utils/query";
-import { useInfiniteQuery } from "react-query";
 
 import {
   Ticket,
   TicketForSorting,
-  TicketStatus,
   TicketStatusForFilter,
   Ticket_Meta_Data,
 } from "@/models/Ticket";

@@ -53,30 +53,3 @@ export const putData = (resource: string, data?: Object) => {
     }
   );
 };
-
-export const axiosGet = async (resource: string) => {
-  try {
-    const response = await axios.get(`/${resource}`);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const axiosPost = async (resource: string, data: Object) => {
-  try {
-    const response = await axios.post(`/${resource}`, data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const axiosPut = async (resource: string, data: Object) => {
-  try {
-    const response = await axios.put(`/${resource}`, data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
