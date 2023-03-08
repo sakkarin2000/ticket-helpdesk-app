@@ -26,10 +26,12 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState("any");
-  const [sortBy, setSortBy] = useState("updated_at");
+  const [sortByColumn, setSortByColumn] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState("DSC");
   const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
   const [ticketList, setTicketList] = useState<Ticket[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasLoadedMore, setHasLoadedMore] = useState(false);
   const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
     {} as Ticket_Meta_Data
   );
@@ -47,7 +49,10 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
 
   useEffect(() => {
     if (ticketData && ticketStatus == "success") {
-      setTicketList(ticketData.data);
+      console.log(ticketData.meta);
+
+      setTicketList([...ticketList, ...ticketData.data]);
+
       setTicketMetaData(ticketData.meta);
     }
   }, [ticketData, ticketStatus]);
@@ -60,9 +65,13 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
           " ticketMetaData.overall_total: " +
           ticketMetaData.overall_total
       );
+
+      setTicketList([]);
+      setLimit(offset + limit);
+      setOffset(0);
       ticketRefetch();
     }
-  }, [count_ticket, ticketIsSuccess]);
+  }, [count_ticket]);
   const handleChange = (
     value: string,
     attribute: "title" | "description" | "status" | "contact_info"
@@ -85,6 +94,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   };
 
   const sorting = (col: string) => {
+    setSortByColumn(col);
     if (sortOrder === "ASC") {
       const sorted = [...ticketList].sort(
         (a: TicketForSorting, b: TicketForSorting) =>
@@ -123,11 +133,48 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
 
   useEffect(() => {
     if (ticket_mutation.isSuccess) {
-      ticketRefetch();
+      setTicketList([]);
+      setLimit(limit + offset);
+      setOffset(0);
       setShowEditTicketModal(false);
+      ticketRefetch();
       ticket_mutation.reset();
     }
   }, [ticket_mutation.isSuccess]);
+
+  // const handleScroll = () => {
+  //   // Check if the user has scrolled to the bottom of the page
+  //   if (
+  //     window.innerHeight + document.documentElement.scrollTop >=
+  //     document.documentElement.offsetHeight
+  //   ) {
+  //     handleLoadMore();
+  //   }
+  // };
+  const handleLoadMore = async () => {
+    console.log(ticketMetaData);
+    console.log(
+      "ticketMetaData.total: " +
+        ticketMetaData.total +
+        " ticketList.length: " +
+        ticketList.length
+    );
+    if (!isLoadingMore && offset + 10 < ticketMetaData.total) {
+      console.log("Loading More");
+      setLimit(10);
+      setOffset(offset + 10);
+      ticketRefetch();
+      setHasLoadedMore(true);
+    }
+  };
+
+  // useEffect(() => {
+  //   // Detect scroll events
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => {
+  //     window.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, []);
   return (
     <Observer>
       {() => (
@@ -147,7 +194,12 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                     id="grid-state"
                     onChange={(e) => {
                       console.log(e.target.value);
+                      setSortByColumn("updated_at");
+                      setTicketList([]);
                       setStatusFilter(e.target.value);
+                      ticketRefetch();
+                      setLimit(10);
+                      setOffset(0);
                     }}
                     defaultValue={statusFilter}
                   >
@@ -180,11 +232,21 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
               <thead className="bg-white border-b">
                 <tr>
                   <th
+                    scope="col"
+                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                  >
+                    Index
+                  </th>
+                  <th
                     onClick={() => {
                       sorting("title");
                     }}
                     scope="col"
-                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className={
+                      sortByColumn == "title"
+                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
+                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    }
                   >
                     Title
                   </th>
@@ -193,7 +255,11 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       sorting("description");
                     }}
                     scope="col"
-                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className={
+                      sortByColumn == "description"
+                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
+                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    }
                   >
                     Description
                   </th>
@@ -202,7 +268,11 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       sorting("contact_info");
                     }}
                     scope="col"
-                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className={
+                      sortByColumn == "contact_info"
+                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
+                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    }
                   >
                     Contact Information
                   </th>
@@ -211,7 +281,11 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       sorting("created_at");
                     }}
                     scope="col"
-                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className={
+                      sortByColumn == "created_at"
+                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
+                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    }
                   >
                     Created At
                   </th>
@@ -220,16 +294,24 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       sorting("updated_at");
                     }}
                     scope="col"
-                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className={
+                      sortByColumn == "updated_at"
+                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
+                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    }
                   >
-                    Updated At
+                    Latest Updated At
                   </th>
                   <th
                     onClick={() => {
                       sorting("status");
                     }}
                     scope="col"
-                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className={
+                      sortByColumn == "status"
+                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
+                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    }
                   >
                     Status
                   </th>
@@ -265,6 +347,9 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       key={ticket.ticket_id}
                       className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
                     >
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                        {index + 1}
+                      </td>
                       <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                         {ticket.title}
                       </td>
@@ -343,10 +428,38 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       </div>
                     </td>
                   </tr>
+                ) : isLoadingMore ? (
+                  <tr>
+                    <td colSpan={7} className="text-sm p-4 text-gray-500 ">
+                      <div className="flex justify-center">Loading more...</div>
+                    </td>
+                  </tr>
                 ) : null}
               </tbody>
             </table>
+            <div
+              className={
+                ticketList.length > 0 ? "flex justify-center mt-2 " : "hidden"
+              }
+            >
+              {ticketMetaData.total == ticketList.length ? (
+                <a className="text-gray-400 py-2">
+                  {" "}
+                  There is no more tickets to show
+                </a>
+              ) : (
+                <button
+                  className="cursor-pointer bg-gradient-to-br text-sm border border-inherit  from-[#ff0077] to-[#941061] py-2 px-5 w-fit rounded-full   text-white hover:opacity-80 hover:border-1 transition-all"
+                  onClick={() => {
+                    handleLoadMore();
+                  }}
+                >
+                  Loadmore
+                </button>
+              )}
+            </div>
           </div>
+
           {showEditTicketModal ? (
             <UpdateTicketModal
               handleSubmit={handleSubmitUpdateInfo}
