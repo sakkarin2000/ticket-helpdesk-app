@@ -66,6 +66,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
       ticketRefetch();
     }
   }, [count_ticket]);
+
   const handleChange = (
     value: string,
     attribute: "title" | "description" | "status" | "contact_info"
@@ -173,10 +174,10 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       console.log(e.target.value);
                       setSortByColumn("updated_at");
                       setTicketList([]);
-                      setStatusFilter(e.target.value);
-                      ticketRefetch();
                       setLimit(10);
                       setOffset(0);
+                      setStatusFilter(e.target.value);
+                      ticketRefetch();
                     }}
                     defaultValue={statusFilter}
                   >

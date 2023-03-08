@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const pool = new Pool({
-  database: 'postgres',
+  database: 'helpdesk_admin',
   host: process.env.DATABASE_URL,
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
