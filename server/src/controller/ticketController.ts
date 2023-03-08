@@ -20,6 +20,8 @@ const getTicket = async (req: Request, res: Response) => {
     const result = await pool.query(query, query_params);
     const total_result = await pool.query(total_query, total_query_params);
     const total = total_result.rows[0].count;
+    const overall_total_result = isNaN(status) ? total_result : await pool.query(queries.get_count_ticket_total);
+    const overall_total = overall_total_result.rows[0].count;
     const tickets = result.rows;
     const count = tickets.length;
     const metadata = {
@@ -27,6 +29,7 @@ const getTicket = async (req: Request, res: Response) => {
       offset,
       count,
       total: total,
+      overall_total: overall_total,
     };
 
     const response = {

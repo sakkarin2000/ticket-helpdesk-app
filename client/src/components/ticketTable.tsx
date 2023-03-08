@@ -7,7 +7,13 @@ import { GrStatusGoodSmall } from "react-icons/gr";
 import { putData, getData } from "../../utils/query";
 import { useInfiniteQuery } from "react-query";
 
-import { Ticket, Ticket_Meta_Data } from "@/models/Ticket";
+import {
+  Ticket,
+  TicketForSorting,
+  TicketStatus,
+  TicketStatusForFilter,
+  Ticket_Meta_Data,
+} from "@/models/Ticket";
 import LoadingForTable from "./LoadingForTable";
 import { formatDate } from "../../utils/formatDate";
 import UpdateTicketModal from "./modal/updateTicketModal";
@@ -18,9 +24,11 @@ interface TicketTableProps {
 export default function TicketTable({ count_ticket }: TicketTableProps) {
   const ticket_mutation = putData("api/v1/ticket");
   const [limit, setLimit] = useState(10);
-  const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
   const [offset, setOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState("any");
+  const [sortBy, setSortBy] = useState("updated_at");
+  const [sortOrder, setSortOrder] = useState("DSC");
+  const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
   const [ticketList, setTicketList] = useState<Ticket[]>([]);
   const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
     {} as Ticket_Meta_Data
@@ -45,7 +53,13 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   }, [ticketData, ticketStatus]);
 
   useEffect(() => {
-    if (count_ticket != ticketList.length) {
+    if (count_ticket != ticketMetaData.overall_total) {
+      console.log(
+        "count_ticket: " +
+          count_ticket +
+          " ticketMetaData.overall_total: " +
+          ticketMetaData.overall_total
+      );
       ticketRefetch();
     }
   }, [count_ticket, ticketIsSuccess]);
@@ -68,6 +82,24 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     }
     setTicketToEdit(tempTicketToEdit);
     console.log(ticketToEdit);
+  };
+
+  const sorting = (col: string) => {
+    if (sortOrder === "ASC") {
+      const sorted = [...ticketList].sort(
+        (a: TicketForSorting, b: TicketForSorting) =>
+          String(a[col]).toLowerCase() > String(b[col]).toLowerCase() ? 1 : -1
+      );
+      setTicketList(sorted);
+      setSortOrder("DSC");
+    } else if (sortOrder === "DSC") {
+      const sorted = [...ticketList].sort(
+        (a: TicketForSorting, b: TicketForSorting) =>
+          String(a[col]).toLowerCase() < String(b[col]).toLowerCase() ? 1 : -1
+      );
+      setTicketList(sorted);
+      setSortOrder("ASC");
+    }
   };
 
   const handleSubmitUpdateInfo = (e: any) => {
@@ -100,43 +132,104 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     <Observer>
       {() => (
         <>
-          <div className="px-10 flex justify-center">
+          <div className="px-10 flex flex-col justify-center pb-10">
+            <div className="flex gap-4">
+              <div className="pb-5 w-1/6">
+                <div className="flex flex-cols gap-2">
+                  <label className="block text-sm font-regular text-bold text-gray-900 py-2 ">
+                    Filter by Status
+                  </label>
+                </div>
+                <div className="self-center relative">
+                  <select
+                    aria-label="Correct answer"
+                    className="block appearance-none w-full bg-white border border-[#081F3E] text-[#081F3E] py-1.5 px-4 pr-8 rounded leading-tight focus:outline-none text-[14px]"
+                    id="grid-state"
+                    onChange={(e) => {
+                      console.log(e.target.value);
+                      setStatusFilter(e.target.value);
+                    }}
+                    defaultValue={statusFilter}
+                  >
+                    <option disabled selected className="text-[14px]">
+                      Select Status
+                    </option>
+                    {TicketStatusForFilter.map((ticketstatus) => (
+                      <option
+                        key={`key_${ticketstatus.id}`}
+                        value={ticketstatus.id}
+                        className="text-[16px]"
+                      >
+                        {ticketstatus.status_name_en}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#081F3E]">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
             <table className="min-w-full border border-gray-200">
               <thead className="bg-white border-b">
                 <tr>
                   <th
+                    onClick={() => {
+                      sorting("title");
+                    }}
                     scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
                     Title
                   </th>
                   <th
+                    onClick={() => {
+                      sorting("description");
+                    }}
                     scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
                     Description
                   </th>
                   <th
+                    onClick={() => {
+                      sorting("contact_info");
+                    }}
                     scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
                     Contact Information
                   </th>
                   <th
+                    onClick={() => {
+                      sorting("created_at");
+                    }}
                     scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
                     Created At
                   </th>
                   <th
+                    onClick={() => {
+                      sorting("updated_at");
+                    }}
                     scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
                     Updated At
                   </th>
                   <th
+                    onClick={() => {
+                      sorting("status");
+                    }}
                     scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                    className="cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
                   >
                     Status
                   </th>
@@ -149,7 +242,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
               <tbody>
                 {ticketStatus == "error" ? (
                   <LoadingForTable
-                    numCols={6}
+                    numCols={7}
                     numRows={1}
                     isError={true}
                     errorResponse={
@@ -159,90 +252,98 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                 ) : null}
                 {ticketStatus == "loading" ? (
                   <LoadingForTable
-                    numCols={6}
+                    numCols={7}
                     numRows={6}
                     isError={false}
                     errorResponse={""}
                   />
                 ) : null}
 
-                {ticketStatus == "success"
-                  ? ticketList.map((ticket, index) => (
-                      <tr
-                        key={ticket.ticket_id}
-                        className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
-                      >
-                        <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                          {ticket.title}
-                        </td>
-                        <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                          {ticket.description}
-                        </td>
-                        <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                          {ticket.contact_info}
-                        </td>
-                        <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                          {formatDate(new Date(ticket.created_at))}
-                        </td>
-                        <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                          {formatDate(new Date(ticket.updated_at))}
-                        </td>
-                        <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                          {ticket.status == -1 ? (
-                            <div className="flex gap-2 items-center">
-                              <div className="text-red-500 ">
-                                {" "}
-                                <GrStatusGoodSmall />
-                              </div>{" "}
-                              <a>Reject</a>
-                            </div>
-                          ) : ticket.status == 0 ? (
-                            <div className="flex gap-2 items-center">
-                              <div className="text-yellow-500 ">
-                                {" "}
-                                <GrStatusGoodSmall />
-                              </div>{" "}
-                              <a>Pending</a>
-                            </div>
-                          ) : ticket.status == 1 ? (
-                            <div className="flex gap-2 items-center">
-                              <div className="text-green-500 ">
-                                {" "}
-                                <GrStatusGoodSmall />
-                              </div>{" "}
-                              <a>Accept</a>
-                            </div>
-                          ) : ticket.status == 2 ? (
-                            <div className="flex gap-2 items-center">
-                              <div className="text-blue-500 ">
-                                {" "}
-                                <GrStatusGoodSmall />
-                              </div>{" "}
-                              <a>Resolved</a>
-                            </div>
-                          ) : (
-                            "Unknown"
-                          )}
-                        </td>
-                        <td className="text-xl text-[#C10000] font-light px-6 py-4 whitespace-nowrap cursor-pointer">
-                          <MdModeEditOutline
-                            onClick={() => {
-                              setTicketToEdit({
-                                ticket_id: ticket.ticket_id,
-                                title: ticket.title,
-                                description: ticket.description,
-                                contact_info: ticket.contact_info,
-                                created_at: ticket.created_at,
-                                updated_at: ticket.updated_at,
-                                status: ticket.status,
-                              });
-                              setShowEditTicketModal(true);
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    ))
-                  : null}
+                {ticketStatus == "success" && ticketList.length > 0 ? (
+                  ticketList.map((ticket, index) => (
+                    <tr
+                      key={ticket.ticket_id}
+                      className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
+                    >
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                        {ticket.title}
+                      </td>
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                        {ticket.description}
+                      </td>
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                        {ticket.contact_info}
+                      </td>
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                        {formatDate(new Date(ticket.created_at))}
+                      </td>
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                        {formatDate(new Date(ticket.updated_at))}
+                      </td>
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                        {ticket.status == -1 ? (
+                          <div className="flex gap-2 items-center">
+                            <div className="text-red-500 ">
+                              {" "}
+                              <GrStatusGoodSmall />
+                            </div>{" "}
+                            <a>Reject</a>
+                          </div>
+                        ) : ticket.status == 0 ? (
+                          <div className="flex gap-2 items-center">
+                            <div className="text-yellow-500 ">
+                              {" "}
+                              <GrStatusGoodSmall />
+                            </div>{" "}
+                            <a>Pending</a>
+                          </div>
+                        ) : ticket.status == 1 ? (
+                          <div className="flex gap-2 items-center">
+                            <div className="text-green-500 ">
+                              {" "}
+                              <GrStatusGoodSmall />
+                            </div>{" "}
+                            <a>Accept</a>
+                          </div>
+                        ) : ticket.status == 2 ? (
+                          <div className="flex gap-2 items-center">
+                            <div className="text-blue-500 ">
+                              {" "}
+                              <GrStatusGoodSmall />
+                            </div>{" "}
+                            <a>Resolved</a>
+                          </div>
+                        ) : (
+                          "Unknown"
+                        )}
+                      </td>
+                      <td className="text-xl text-[#C10000] font-light px-6 py-4 whitespace-nowrap cursor-pointer">
+                        <MdModeEditOutline
+                          onClick={() => {
+                            setTicketToEdit({
+                              ticket_id: ticket.ticket_id,
+                              title: ticket.title,
+                              description: ticket.description,
+                              contact_info: ticket.contact_info,
+                              created_at: ticket.created_at,
+                              updated_at: ticket.updated_at,
+                              status: ticket.status,
+                            });
+                            setShowEditTicketModal(true);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                ) : ticketStatus == "success" && ticketList.length == 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-sm p-4 text-gray-500 ">
+                      <div className="flex justify-center">
+                        There is no ticket. Try adding one.
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
