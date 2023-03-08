@@ -103,3 +103,109 @@ Content-Type: application/json
 }
 
 ```
+
+
+### POST **/api/v1/ticket**
+
+Create ticket 
+
+- URL: **`/ticket`**
+- Method: **`POST`**
+- Headers:
+    - Content-Type: **`application/json`**
+- Body:
+    
+    ```
+    jsonCopy code
+    {
+      "title": "string",
+      "description": "string",
+      "contact_info": "string"
+    }
+    
+    ```
+    
+    | Field | Type | Required | Description |
+    | --- | --- | --- | --- |
+    | title | string | Yes | The title of the ticket |
+    | description | string | Yes | The description of the ticket |
+    | contact_info | string | Yes | The contact information of the ticket |
+
+### **Response**
+
+- Status Code: **`201 Created`** if the ticket is created successfully
+- Status Code: **`400 Bad Request`** if the required fields are not provided or invalid
+- Status Code: **`500 Internal Server Error`** if there is an error while creating the ticket
+- Body:
+    - If the ticket is created successfully:
+        
+        ```
+        jsonCopy code
+        {
+          "message": "Create ticket success",
+        }
+        ```
+        
+        | Field | Type | Description |
+        | --- | --- | --- |
+        | message | string | The success message |
+    - If there is an error while creating the ticket:
+        
+        ```
+        jsonCopy code
+        {
+          "message": "Error, Can't create ticket"
+        }
+        ```
+        
+        | Field | Type | Description |
+        | --- | --- | --- |
+        | message | string | The error message details |
+        
+
+### PUT **/api/v1/ticket**
+
+Update ticket Info and Status
+
+### **Request Parameters**
+
+| Parameter | Required | Type | Description |
+| --- | --- | --- | --- |
+| title | Yes | string | The new title of the ticket |
+| description | Yes | string | The new description of the ticket |
+| contact_info | Yes | string | The new contact information for the ticket |
+| ticket_id | Yes | string | The unique identifier of the ticket to be updated |
+| status | Yes | string | The new status of the ticket (e.g., -1 = Rejected, 1 = Accept, 0 = Pending, 2 = Resolved) |
+
+### **Response Codes**
+
+| Status Code | Description |
+| --- | --- |
+| 201 | Ticket updated successfully |
+| 400 | Bad Request. Required parameter ticket_id is missing. |
+| 404 | Ticket with the provided ticket_id not found in the database. |
+| 500 | Internal Server Error. Something went wrong on the server. |
+
+### **Example Request**
+
+```
+javascriptCopy code
+PUT /tickets
+{
+    "title": "New Title",
+    "description": "New Description",
+    "contact_info": "new_contact_info@example.com",
+    "ticket_id": "a uuidV4()",
+    "status": "-1"
+}
+
+```
+
+### **Example Response**
+
+```
+javascriptCopy code
+HTTP/1.1 201 OK
+"Update ticket info & status success"
+
+```
