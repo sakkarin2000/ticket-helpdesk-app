@@ -19,6 +19,7 @@ interface TicketTableProps {
 }
 export default function TicketTable({ count_ticket }: TicketTableProps) {
   const ticket_mutation = putData("api/v1/ticket");
+  const uniqueIds = new Set<number>();
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState("any");
@@ -29,6 +30,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
     {} as Ticket_Meta_Data
   );
+  const [filterColumnChanged, setFilterColumnChanged] = useState(false);
 
   const {
     data: ticketData,
@@ -44,8 +46,18 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   useEffect(() => {
     if (ticketData && ticketStatus == "success") {
       console.log(ticketData.meta);
-
-      setTicketList([...ticketList, ...ticketData.data]);
+      if (filterColumnChanged == false) {
+        const uniqueTickets = ticketData.data.filter((ticket: Ticket) => {
+          // Only include tickets whose ticket_id is not already in the ticketList
+          return !ticketList.some(
+            (existingTicket) => existingTicket.ticket_id === ticket.ticket_id
+          );
+        });
+        setTicketList([...ticketList, ...uniqueTickets]);
+      } else {
+        setTicketList(ticketData.data);
+        setFilterColumnChanged(false);
+      }
 
       setTicketMetaData(ticketData.meta);
     }
@@ -127,7 +139,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   };
 
   useEffect(() => {
-    if (ticket_mutation.isSuccess) {
+    if (ticket_mutation.status == "success") {
       setTicketList([]);
       setLimit(limit + offset);
       setOffset(0);
@@ -135,7 +147,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
       ticketRefetch();
       ticket_mutation.reset();
     }
-  }, [ticket_mutation.isSuccess]);
+  }, [ticket_mutation.status]);
 
   const handleLoadMore = async () => {
     console.log(ticketMetaData);
@@ -172,6 +184,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                     id="grid-state"
                     onChange={(e) => {
                       console.log(e.target.value);
+                      setFilterColumnChanged(true);
                       setSortByColumn("updated_at");
                       setTicketList([]);
                       setLimit(10);

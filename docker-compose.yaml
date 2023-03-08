@@ -23,6 +23,8 @@ services:
     build: ./client
     container_name: frontend
     restart: unless-stopped
+    depends_on:
+      - db
     hostname: frontend
     tty: true
     networks:
