@@ -30,8 +30,6 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   const [sortOrder, setSortOrder] = useState("DSC");
   const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
   const [ticketList, setTicketList] = useState<Ticket[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasLoadedMore, setHasLoadedMore] = useState(false);
   const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
     {} as Ticket_Meta_Data
   );
@@ -142,15 +140,6 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     }
   }, [ticket_mutation.isSuccess]);
 
-  // const handleScroll = () => {
-  //   // Check if the user has scrolled to the bottom of the page
-  //   if (
-  //     window.innerHeight + document.documentElement.scrollTop >=
-  //     document.documentElement.offsetHeight
-  //   ) {
-  //     handleLoadMore();
-  //   }
-  // };
   const handleLoadMore = async () => {
     console.log(ticketMetaData);
     console.log(
@@ -159,22 +148,14 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
         " ticketList.length: " +
         ticketList.length
     );
-    if (!isLoadingMore && offset + 10 < ticketMetaData.total) {
+    if (offset + 10 < ticketMetaData.total) {
       console.log("Loading More");
       setLimit(10);
       setOffset(offset + 10);
       ticketRefetch();
-      setHasLoadedMore(true);
     }
   };
 
-  // useEffect(() => {
-  //   // Detect scroll events
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => {
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, []);
   return (
     <Observer>
       {() => (
@@ -426,12 +407,6 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       <div className="flex justify-center">
                         There is no ticket. Try adding one.
                       </div>
-                    </td>
-                  </tr>
-                ) : isLoadingMore ? (
-                  <tr>
-                    <td colSpan={7} className="text-sm p-4 text-gray-500 ">
-                      <div className="flex justify-center">Loading more...</div>
                     </td>
                   </tr>
                 ) : null}
