@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
 import { Observer } from "mobx-react";
-import { MdModeEditOutline } from "react-icons/md";
+import { useEffect, useState } from "react";
 import { GrStatusGoodSmall } from "react-icons/gr";
-import { putData, getData } from "../../utils/query";
+import { MdModeEditOutline } from "react-icons/md";
+import { getData, putData } from "../../utils/query";
 
 import {
   Ticket,
@@ -10,15 +10,14 @@ import {
   TicketStatusForFilter,
   Ticket_Meta_Data,
 } from "@/models/Ticket";
-import LoadingForTable from "./LoadingForTable";
 import { formatDate } from "../../utils/formatDate";
+import LoadingForTable from "./LoadingForTable";
 import UpdateTicketModal from "./modal/updateTicketModal";
 
 interface TicketTableProps {
   count_ticket: number;
 }
 export default function TicketTable({ count_ticket }: TicketTableProps) {
-  const ticket_mutation = putData("api/v1/ticket");
   const uniqueIds = new Set<number>();
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
@@ -26,6 +25,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   const [sortByColumn, setSortByColumn] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState("DSC");
   const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
+  const ticket_mutation = putData("tickets");
   const [ticketList, setTicketList] = useState<Ticket[]>([]);
   const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
     {} as Ticket_Meta_Data
@@ -38,9 +38,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     isSuccess: ticketIsSuccess,
     isLoading: ticketIsLoading,
     refetch: ticketRefetch,
-  } = getData(
-    `api/v1/ticket?limit=${limit}&offset=${offset}&status=${statusFilter}`
-  );
+  } = getData(`tickets?limit=${limit}&offset=${offset}&status=${statusFilter}`);
   const [showEditTicketModal, setShowEditTicketModal] = useState(false);
 
   useEffect(() => {
@@ -58,18 +56,19 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
         setTicketList(ticketData.data);
         setFilterColumnChanged(false);
       }
+      console.log(ticketData);
 
       setTicketMetaData(ticketData.meta);
     }
   }, [ticketData, ticketStatus]);
 
   useEffect(() => {
-    if (count_ticket != ticketMetaData.overall_total) {
+    if (count_ticket != ticketMetaData?.overall_total) {
       console.log(
         "count_ticket: " +
           count_ticket +
           " ticketMetaData.overall_total: " +
-          ticketMetaData.overall_total
+          ticketMetaData?.overall_total
       );
 
       setTicketList([]);
@@ -153,11 +152,11 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     console.log(ticketMetaData);
     console.log(
       "ticketMetaData.total: " +
-        ticketMetaData.total +
+        ticketMetaData?.total +
         " ticketList.length: " +
         ticketList.length
     );
-    if (offset + 10 < ticketMetaData.total) {
+    if (offset + 10 < ticketMetaData?.total) {
       console.log("Loading More");
       setLimit(10);
       setOffset(offset + 10);
@@ -427,7 +426,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                 ticketList.length > 0 ? "flex justify-center mt-2 " : "hidden"
               }
             >
-              {ticketMetaData.total == ticketList.length ? (
+              {ticketMetaData?.total == ticketList.length ? (
                 <a className="text-gray-400 py-2">
                   {" "}
                   There is no more tickets to show

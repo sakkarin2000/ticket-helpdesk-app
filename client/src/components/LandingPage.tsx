@@ -1,15 +1,14 @@
-import styles from "@/styles/Home.module.css";
 import CreateTicketModal from "@/components/modal/createTicketModal";
-import { coreContext } from "../stores/context";
-import { useContext, useEffect, useState } from "react";
+import styles from "@/styles/Home.module.css";
 import { Observer } from "mobx-react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { getData, postData } from "../../utils/query";
-import { useRef } from "react";
+import { coreContext } from "../stores/context";
 import TicketTable from "./ticketTable";
 
 export default function LandingPage() {
   const sectionRef = useRef<null | HTMLElement>(null);
-  const mutation = postData("api/v1/ticket");
+  const mutation = postData("tickets");
   const [totalTicket, setTotalTicket] = useState(0);
   const {
     data: totalTicketData,
@@ -17,7 +16,7 @@ export default function LandingPage() {
     isSuccess: totalTicketIsSuccess,
     isLoading: totalTicketIsLoading,
     refetch,
-  } = getData(`api/v1/total-ticket`);
+  } = getData(`total-ticket`);
   const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

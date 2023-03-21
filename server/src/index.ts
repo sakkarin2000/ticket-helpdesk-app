@@ -1,7 +1,7 @@
-import express from 'express';
 import cors from 'cors';
-import logResponse from './utils/logResponse.js';
+import express from 'express';
 import v1Routes from './routes/v1.js';
+import logResponse from './utils/logResponse.js';
 const app = express();
 const port = 5001;
 const corsOptions = {
@@ -10,9 +10,9 @@ const corsOptions = {
   credentials: true,
 };
 
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logResponse);
-app.use(cors(corsOptions));
 
 app.get('/', (req, res) => {
   res.send('Ticket Helpdesk Restful API!');

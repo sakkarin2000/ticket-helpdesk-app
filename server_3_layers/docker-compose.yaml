@@ -1,0 +1,19 @@
+version: '3.9'
+services:
+  ts-backend-node:
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: base
+    container_name: ts-backend-node-3-layer
+    ports:
+      - '5001:5001'
+      - '9229:9229'
+    volumes:
+      - .:/home/node/app
+      - /home/node/app/node_modules
+    environment:
+      - DATABASE_URL=192.168.1.37
+      - DBUSER=helpdesk_admin
+      - DBPASSWORD=tick@dminP@ss
+    command: npm run dev
