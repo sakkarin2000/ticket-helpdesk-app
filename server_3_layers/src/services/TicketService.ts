@@ -1,23 +1,25 @@
-import TicketRepository from '../repository/TicketRepository.js';
+import { ListTicketRequest } from 'src/request/ListTicketRequest.js';
+import TicketRepository, { TicketInterface } from '../repository/TicketRepository.js';
+import { CreateTicketRequest } from '../request/CreateTicketRequest.js';
+import { UpdateTicketRequest } from '../request/UpdateTicketRequest.js';
 export default class TicketService {
   ticketRepo = new TicketRepository();
 
-  async list(limit: number, offset: number) {
-    const tickets = await this.ticketRepo.list(limit, offset);
+  async list(listTicketRequest: ListTicketRequest) {
+    let tickets: TicketInterface[] = [];
+    if (listTicketRequest.status == undefined) {
+      tickets = await this.ticketRepo.list(listTicketRequest);
+    } else {
+      tickets = await this.ticketRepo.listWithStatusFilter(listTicketRequest);
+    }
     return tickets;
   }
-
-  async listWithStatusFilter(limit: number, offset: number, status: number) {
-    const tickets = await this.ticketRepo.listWithStatusFilter(limit, offset, status);
-    return tickets;
+  async create(ticketToCreate: CreateTicketRequest) {
+    await this.ticketRepo.create(ticketToCreate);
   }
 
-  async create(title: string, description: string, contact_info: string) {
-    await this.ticketRepo.create(title, description, contact_info);
-  }
-
-  async update(title: string, description: string, contact_info: string, ticket_id: string, status: number) {
-    await this.ticketRepo.update(title, description, contact_info, ticket_id, status);
+  async update(ticket_id: string, ticketToUpdate: UpdateTicketRequest) {
+    await this.ticketRepo.update(ticket_id, ticketToUpdate);
   }
 
   async totalTicket() {
