@@ -49,7 +49,7 @@ export const putData = (resource: string, data?: Object) => {
         console.log("Data has been posted", data);
       },
       onError: (error) => {
-        console.log("Error posting data", error);
+        console.log("Error Updatinging data", error);
       },
     }
   );
