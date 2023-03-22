@@ -1,7 +1,7 @@
 // this shim is required
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
-import { TicketController } from './controllers/TicketController.js';
+import { TicketController } from './controllers/TicketController';
 
 // creates express app, registers all controller routes and returns you express app instance
 const app = createExpressServer({

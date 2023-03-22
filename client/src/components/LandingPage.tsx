@@ -54,7 +54,7 @@ export default function LandingPage() {
     <Observer>
       {() => (
         <>
-          <section className="h-screen">
+          <section className="h-screen ">
             <div className="bg-gradient-to-br from-[#ff0077] to-[#941061] h-[370px] ">
               <div className="absolute z-20 top-[120px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-center">
                 <h1 className="text-5xl font-bold">
@@ -105,8 +105,8 @@ export default function LandingPage() {
               </h1>
             </div>
           </section>
-          <section ref={sectionRef} className="h-fit">
-            <div>
+          <section ref={sectionRef} className="h-fit ">
+            <div className="overflow-x-auto mr-10">
               <TicketTable count_ticket={totalTicket} />
             </div>
           </section>

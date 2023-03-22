@@ -1,49 +1,27 @@
-import { Body, Get, JsonController, Post, Put, Req, Res } from 'routing-controllers';
-import { CreateTicketRequest } from '../request/CreateTicketRequest.js';
-import { ListTicketRequest } from '../request/ListTicketRequest.js';
-import { UpdateTicketRequest } from '../request/UpdateTicketRequest.js';
-import TicketService from '../services/TicketService.js';
+import { Body, Get, JsonController, Post, Put, QueryParams, Req, Res } from 'routing-controllers';
+import { TicketRepository } from '../repository/TicketRepository';
+import { CreateTicketRequest } from '../request/CreateTicketRequest';
+import { ListTicketRequest } from '../request/ListTicketRequest';
+import { UpdateTicketRequest } from '../request/UpdateTicketRequest';
+import TicketService from '../services/TicketService';
 
 @JsonController()
 export class TicketController {
-  ticketService = new TicketService();
+  tiketRepo: TicketRepository;
+  ticketService: TicketService;
+  constructor() {
+    this.tiketRepo = new TicketRepository();
+    this.ticketService = new TicketService(this.tiketRepo);
+  }
   @Get('/tickets')
-  async listAllTicket(@Req() request: any, @Res() response: any) {
-    const limit = parseInt(request.query.limit);
-    const offset = parseInt(request.query.offset);
-    const status = request.query.status;
-
-    const listTicketRequest = new ListTicketRequest();
-    listTicketRequest.limit = limit;
-    listTicketRequest.offset = offset;
-    listTicketRequest.status = status;
-
-    const hasStatusFilter = !isNaN(status);
-    let total = 0;
-    const ticketData = await this.ticketService.list(listTicketRequest);
-
-    if (hasStatusFilter) {
-      total = await this.ticketService.totalTicketWithStatusFilter(status);
-    } else {
-      total = await this.ticketService.totalTicket();
+  async listAllTicket(@Req() request: any, @Res() response: any, @QueryParams() query: ListTicketRequest) {
+    try {
+      const ticketResponse = await this.ticketService.list(query);
+      return response.status(200).send(ticketResponse);
+    } catch (error) {
+      console.error(error);
+      response.status(500).send("Error, Can't list ticket");
     }
-    const count = ticketData.length;
-    const overall_total = await this.ticketService.totalTicket();
-
-    const metadata = {
-      limit,
-      offset,
-      count,
-      total: total,
-      overall_total: overall_total,
-    };
-
-    const responseData = {
-      data: ticketData,
-      meta: metadata,
-      message: 'Get all tickets Success',
-    };
-    return response.status(200).send(responseData);
   }
 
   @Post('/tickets')
@@ -58,20 +36,31 @@ export class TicketController {
   }
 
   @Put('/tickets/:id')
-  // TODO: add id to path to update ticket [Completed]
   async updateTicket(@Req() request: any, @Res() response: any, @Body() ticketBody: UpdateTicketRequest) {
-    const ticketId = request.params.id;
-    console.log(ticketId);
-    await this.ticketService.update(ticketId, ticketBody);
-    return response.status(201).send('Update ticket success');
+    try {
+      const ticketId = request.params.id;
+      const result = await this.ticketService.update(ticketId, ticketBody);
+      if (!result.success) {
+        return response.status(400).send(result.message);
+      }
+      return response.status(201).send(result.message);
+    } catch (error) {
+      console.error(error);
+      response.status(500).send("Error, Can't update ticket");
+    }
   }
 
   @Get('/total-ticket')
   async getTotalTicket(@Req() request: any, @Res() response: any) {
-    const totalTicket = await this.ticketService.totalTicket();
-    const responseData = {
-      total_ticket: totalTicket,
-    };
-    return response.status(200).send(responseData);
+    try {
+      const totalTicket = await this.ticketService.totalTicket();
+      const responseData = {
+        total_ticket: totalTicket,
+      };
+      return response.status(200).send(responseData);
+    } catch (error) {
+      console.error(error);
+      response.status(500).send("Error, Can't get total number of ticket");
+    }
   }
 }

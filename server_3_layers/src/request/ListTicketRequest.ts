@@ -1,9 +1,10 @@
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
-enum Status {
+export enum Status {
   Pending = 'Pending',
   Accepted = 'Accepted',
   Rejected = 'Rejected',
   Resolved = 'Resolved',
+  Canceled = 'Canceled',
 }
 
 export class ListTicketRequest {

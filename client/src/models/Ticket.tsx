@@ -44,6 +44,10 @@ export const TicketStatus = [
     id: 1,
     status_name_en: "Accepted",
   },
+  {
+    id: -2,
+    status_name_en: "Canceled",
+  },
 ];
 
 export const TicketStatusForFilter = [
@@ -66,6 +70,10 @@ export const TicketStatusForFilter = [
   {
     id: "2",
     status_name_en: "Resolved",
+  },
+  {
+    id: "-2",
+    status_name_en: "Canceled",
   },
 ];
 

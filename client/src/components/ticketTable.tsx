@@ -8,7 +8,7 @@ import {
   Ticket,
   TicketForSorting,
   TicketStatusForFilter,
-  Ticket_Meta_Data
+  Ticket_Meta_Data,
 } from "@/models/Ticket";
 import { formatDate } from "../../utils/formatDate";
 import LoadingForTable from "./LoadingForTable";
@@ -173,7 +173,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
         <>
           <div className="px-10 flex flex-col justify-center pb-10">
             <div className="flex gap-4">
-              <div className="pb-5 w-1/6">
+              <div className="pb-5 w-fit">
                 <div className="flex flex-cols gap-2">
                   <label className="block text-sm font-regular text-bold text-gray-900 py-2 ">
                     Filter by Status
@@ -391,6 +391,14 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                             </div>{" "}
                             <a>Resolved</a>
                           </div>
+                        ) : ticket.status == "Canceled" ? (
+                          <div className="flex gap-2 items-center">
+                            <div className="text-gray-300 ">
+                              {" "}
+                              <GrStatusGoodSmall />
+                            </div>{" "}
+                            <a>Canceled</a>
+                          </div>
                         ) : (
                           "Unknown"
                         )}
@@ -436,7 +444,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                 </a>
               ) : (
                 <button
-                  className="cursor-pointer bg-gradient-to-br text-sm border border-inherit  from-[#ff0077] to-[#941061] py-2 px-5 w-fit rounded-full   text-white hover:opacity-80 hover:border-1 transition-all"
+                  className="absolute z-20 cursor-pointer bg-gradient-to-br text-sm border border-inherit  from-[#ff0077] to-[#941061] py-2 px-5 w-fit rounded-full   text-white hover:opacity-80 hover:border-1 transition-all"
                   onClick={() => {
                     handleLoadMore();
                   }}

@@ -5,6 +5,7 @@ enum Status {
   Accepted = 'Accepted',
   Rejected = 'Rejected',
   Resolved = 'Resolved',
+  Canceled = 'Canceled',
 }
 
 export class UpdateTicketRequest {
