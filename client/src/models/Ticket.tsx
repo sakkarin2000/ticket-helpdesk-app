@@ -5,7 +5,7 @@ export interface Ticket {
   contact_info: string;
   created_at: string;
   updated_at: string;
-  status: number;
+  status: string;
 }
 
 export interface TicketForSorting {
@@ -15,7 +15,7 @@ export interface TicketForSorting {
   contact_info: string;
   created_at: string;
   updated_at: string;
-  status: number;
+  status: string;
   [key: string]: any;
 }
 
@@ -48,8 +48,8 @@ export const TicketStatus = [
 
 export const TicketStatusForFilter = [
   {
-    id: "any",
-    status_name_en: "---------",
+    id: "",
+    status_name_en: "",
   },
   {
     id: "0",

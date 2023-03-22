@@ -8,7 +8,7 @@ import {
   Ticket,
   TicketForSorting,
   TicketStatusForFilter,
-  Ticket_Meta_Data,
+  Ticket_Meta_Data
 } from "@/models/Ticket";
 import { formatDate } from "../../utils/formatDate";
 import LoadingForTable from "./LoadingForTable";
@@ -21,11 +21,11 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
   const uniqueIds = new Set<number>();
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
-  const [statusFilter, setStatusFilter] = useState("any");
+  const [statusFilter, setStatusFilter] = useState("");
   const [sortByColumn, setSortByColumn] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState("DSC");
   const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
-  const ticket_mutation = putData("tickets");
+  const ticket_mutation = putData(`tickets/${ticketToEdit.ticket_id}`);
   const [ticketList, setTicketList] = useState<Ticket[]>([]);
   const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
     {} as Ticket_Meta_Data
@@ -38,7 +38,11 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     isSuccess: ticketIsSuccess,
     isLoading: ticketIsLoading,
     refetch: ticketRefetch,
-  } = getData(`tickets?limit=${limit}&offset=${offset}&status=${statusFilter}`);
+  } = getData(
+    statusFilter != ""
+      ? `tickets?limit=${limit}&offset=${offset}&status=${statusFilter}`
+      : `tickets?limit=${limit}&offset=${offset}`
+  );
   const [showEditTicketModal, setShowEditTicketModal] = useState(false);
 
   useEffect(() => {
@@ -93,7 +97,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
       tempTicketToEdit.contact_info = value;
     }
     if (attribute == "status") {
-      tempTicketToEdit.status = parseInt(value);
+      tempTicketToEdit.status = value;
     }
     setTicketToEdit(tempTicketToEdit);
     console.log(ticketToEdit);
@@ -131,7 +135,6 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
         title: ticketToEdit.title,
         description: ticketToEdit.description,
         contact_info: ticketToEdit.contact_info,
-        ticket_id: ticketToEdit.ticket_id,
         status: ticketToEdit.status,
       });
     }
@@ -199,7 +202,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                     {TicketStatusForFilter.map((ticketstatus) => (
                       <option
                         key={`key_${ticketstatus.id}`}
-                        value={ticketstatus.id}
+                        value={ticketstatus.status_name_en}
                         className="text-[16px]"
                       >
                         {ticketstatus.status_name_en}
@@ -356,15 +359,15 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                         {formatDate(new Date(ticket.updated_at))}
                       </td>
                       <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                        {ticket.status == -1 ? (
+                        {ticket.status == "Rejected" ? (
                           <div className="flex gap-2 items-center">
                             <div className="text-red-500 ">
                               {" "}
                               <GrStatusGoodSmall />
                             </div>{" "}
-                            <a>Reject</a>
+                            <a>Rejected</a>
                           </div>
-                        ) : ticket.status == 0 ? (
+                        ) : ticket.status == "Pending" ? (
                           <div className="flex gap-2 items-center">
                             <div className="text-yellow-500 ">
                               {" "}
@@ -372,15 +375,15 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                             </div>{" "}
                             <a>Pending</a>
                           </div>
-                        ) : ticket.status == 1 ? (
+                        ) : ticket.status == "Accepted" ? (
                           <div className="flex gap-2 items-center">
                             <div className="text-green-500 ">
                               {" "}
                               <GrStatusGoodSmall />
                             </div>{" "}
-                            <a>Accept</a>
+                            <a>Accepted</a>
                           </div>
-                        ) : ticket.status == 2 ? (
+                        ) : ticket.status == "Resolved" ? (
                           <div className="flex gap-2 items-center">
                             <div className="text-blue-500 ">
                               {" "}

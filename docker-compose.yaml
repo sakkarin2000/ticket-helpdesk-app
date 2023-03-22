@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   # backend:
-  #   build: ./server
+  #   build: ./server_3_layers
   #   container_name: backend
   #   depends_on:
   #     - db

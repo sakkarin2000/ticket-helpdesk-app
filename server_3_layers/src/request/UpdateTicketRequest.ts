@@ -1,4 +1,12 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
+
+enum Status {
+  Pending = 'Pending',
+  Accepted = 'Accepted',
+  Rejected = 'Rejected',
+  Resolved = 'Resolved',
+}
+
 export class UpdateTicketRequest {
   @IsString()
   title: string;
@@ -6,8 +14,6 @@ export class UpdateTicketRequest {
   description: string;
   @IsString()
   contact_info: string;
-  @IsString()
-  ticket_id: string;
-  @IsNumber()
-  status: number;
+  @IsEnum(Status)
+  status: Status;
 }

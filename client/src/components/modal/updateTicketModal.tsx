@@ -1,6 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
-import { AiOutlineClose } from "react-icons/ai";
 import { Ticket, TicketStatus } from "@/models/Ticket";
+import { AiOutlineClose } from "react-icons/ai";
 
 interface UpdateTicketModalProps {
   ticketToEdit: Ticket;
@@ -116,7 +115,7 @@ export default function UpdateTicketModal({
                   {TicketStatus.map((ticketstatus) => (
                     <option
                       key={`key_${ticketstatus.id}`}
-                      value={ticketstatus.id}
+                      value={ticketstatus.status_name_en}
                       className="text-[16px]"
                     >
                       {ticketstatus.status_name_en}
