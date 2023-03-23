@@ -3,9 +3,10 @@ import 'mocha';
 import { QueryResult } from 'pg';
 import sinon from 'sinon';
 import { TicketRepository } from '../src/repository/TicketRepository';
+import { CreateTicketRequest } from '../src/request/CreateTicketRequest';
 import { ListTicketRequest, Status } from '../src/request/ListTicketRequest';
 import { UpdateTicketRequest } from '../src/request/UpdateTicketRequest';
-import TicketService from '../src/services/ticketService';
+import TicketService from '../src/services/TicketService';
 
 describe('Ticket Service Test', () => {
   before(() => {
@@ -26,14 +27,25 @@ describe('Ticket Service Test', () => {
     tickerRepo.totalTicketWithStatusFilter.returns(Promise.resolve(0));
     const service = new TicketService(tickerRepo);
 
-    const query: ListTicketRequest = {
+    const queryWithStatus: ListTicketRequest = {
       limit: 10,
       offset: 0,
       status: Status.Pending,
     };
-    const result = await service.list(query);
-    result.data.should.be.an('array');
-    result.data.length.should.be.equal(0);
+    const resultWithStatus = await service.list(queryWithStatus);
+
+    resultWithStatus.data.should.be.an('array');
+    resultWithStatus.data.length.should.be.equal(0);
+
+    const queryWithOutStatus: ListTicketRequest = {
+      limit: 10,
+      offset: 0,
+      status: undefined,
+    };
+    const resultWithOutStatus = await service.list(queryWithOutStatus);
+
+    resultWithOutStatus.data.should.be.an('array');
+    resultWithOutStatus.data.length.should.be.equal(0);
   });
   it('totalTicket method should return total number of tickets', async () => {
     const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
@@ -194,6 +206,14 @@ describe('Update Ticket Status Service Test Cases', () => {
     const result = await service.update('123', { status: 'Resolved' } as UpdateTicketRequest);
     result.success.should.be.equal(true);
   });
+  it('should allow [Accepted] ticket to change to [Canceled]', async () => {
+    const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
+    tickerRepo.update.returns(Promise.resolve({ rowCount: 1 } as QueryResult<any>));
+    tickerRepo.getCurrentStatus.returns(Promise.resolve('Accepted'));
+    const service = new TicketService(tickerRepo);
+    const result = await service.update('123', { status: 'Canceled' } as UpdateTicketRequest);
+    result.success.should.be.equal(true);
+  });
   it('should allow [Rejected] ticket to change to [Accepted]', async () => {
     const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
     tickerRepo.update.returns(Promise.resolve({ rowCount: 1 } as QueryResult<any>));
@@ -203,11 +223,53 @@ describe('Update Ticket Status Service Test Cases', () => {
     result.success.should.be.equal(true);
   });
 
+  it('should prevent invalid ticket_status from database', async () => {
+    const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
+    tickerRepo.getCurrentStatus.returns(Promise.resolve('UnknownStatus'));
+    const service = new TicketService(tickerRepo);
+    const result = await service.update('123', { status: 'Accepted' } as UpdateTicketRequest);
+    result.success.should.be.equal(false);
+  });
+
   it('should prevent invalid ticket_id to update', async () => {
     const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
     tickerRepo.update.returns(Promise.resolve({ rowCount: 0 } as QueryResult<any>));
+    tickerRepo.getCurrentStatus.returns(Promise.resolve('Pending'));
     const service = new TicketService(tickerRepo);
     const result = await service.update('123', { status: 'Accepted' } as UpdateTicketRequest);
+    result.success.should.be.equal(false);
+  });
+
+  it('should response the success when successfully update ticket', async () => {
+    const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
+    tickerRepo.update.returns(Promise.resolve({ rowCount: 1 } as QueryResult<any>));
+    tickerRepo.getCurrentStatus.returns(Promise.resolve('Pending'));
+    const service = new TicketService(tickerRepo);
+    const result = await service.update('123', { status: 'Accepted' } as UpdateTicketRequest);
+    result.success.should.be.equal(true);
+  });
+
+  it('should response the success when successfully create ticket', async () => {
+    const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
+    tickerRepo.create.returns(Promise.resolve({ rowCount: 1 } as QueryResult<any>));
+    const service = new TicketService(tickerRepo);
+    const result = await service.create({
+      title: 'test create service',
+      description: 'test create service contact info',
+      contact_info: 'test create service contact info',
+    } as CreateTicketRequest);
+    result.success.should.be.equal(true);
+  });
+
+  it('should response the unsuccess when cannot create ticket', async () => {
+    const tickerRepo: sinon.SinonStubbedInstance<TicketRepository> = sinon.createStubInstance(TicketRepository);
+    tickerRepo.create.returns(Promise.resolve({ rowCount: 0 } as QueryResult<any>));
+    const service = new TicketService(tickerRepo);
+    const result = await service.create({
+      title: 'test create service',
+      description: 'test create service contact info',
+      contact_info: 'test create service contact info',
+    } as CreateTicketRequest);
     result.success.should.be.equal(false);
   });
 });

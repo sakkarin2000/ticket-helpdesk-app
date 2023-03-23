@@ -51,7 +51,7 @@ export class TicketController {
   }
 
   @Get('/total-ticket')
-  async getTotalTicket(@Req() request: any, @Res() response: any) {
+  async getTotalTicket(@Res() response: any) {
     try {
       const totalTicket = await this.ticketService.totalTicket();
       const responseData = {

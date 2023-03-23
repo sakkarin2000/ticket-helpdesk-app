@@ -1,19 +1,21 @@
-import { ListTicketRequest } from 'src/request/ListTicketRequest';
 import { TicketEntity, TicketRepository } from '../repository/TicketRepository';
 import { CreateTicketRequest } from '../request/CreateTicketRequest';
-import { UpdateTicketRequest } from '../request/UpdateTicketRequest';
+import { ListTicketRequest, Status } from '../request/ListTicketRequest';
+import { UpdateTicketRequest, ValidTransitions } from '../request/UpdateTicketRequest';
+
 export default class TicketService {
   constructor(private ticketRepo: TicketRepository) {}
 
   async list(listTicketRequest: ListTicketRequest) {
     let tickets: TicketEntity[] = [];
-    const hasStatusFilter = listTicketRequest.status == undefined ? false : true;
+    const hasStatusFilter = listTicketRequest.status ? true : false;
     let total = 0;
 
     if (hasStatusFilter) {
       tickets = await this.ticketRepo.listWithStatusFilter(listTicketRequest);
       total = await this.totalTicketWithStatusFilter(listTicketRequest.status);
-    } else {
+    }
+    if (!hasStatusFilter) {
       tickets = await this.ticketRepo.list(listTicketRequest);
       total = await this.totalTicket();
     }
@@ -36,21 +38,27 @@ export default class TicketService {
     return responseData;
   }
   async create(ticketToCreate: CreateTicketRequest) {
-    await this.ticketRepo.create(ticketToCreate);
+    const result = await this.ticketRepo.create(ticketToCreate);
+    if (result.rowCount == 0) {
+      return { success: false, message: 'Create Ticket Failed' };
+    }
+    return { success: true, message: 'Create Ticket Success' };
   }
 
   async update(ticket_id: string, ticketToUpdate: UpdateTicketRequest) {
     const current_status = await this.ticketRepo.getCurrentStatus(ticket_id);
-    const validTransitions: any = {
-      Pending: ['Accepted', 'Rejected', 'Canceled'],
-      Canceled: [],
-      Accepted: ['Resolved', 'Canceled'],
-      Rejected: ['Accepted'],
-      Resolved: [],
-    };
 
-    if (!validTransitions[current_status]?.includes(ticketToUpdate.status)) {
+    const verifiedEnumStatus: Status | null = Object.values(Status).includes(current_status as Status)
+      ? (current_status as Status)
+      : null;
+
+    const validTransitions = ValidTransitions;
+
+    if (verifiedEnumStatus && !validTransitions[verifiedEnumStatus].includes(ticketToUpdate.status)) {
       return { success: false, message: 'Invalid status' };
+    }
+    if (!verifiedEnumStatus) {
+      return { success: false, message: 'Invalid status from database' };
     }
     const result = await this.ticketRepo.update(ticket_id, ticketToUpdate);
     if (result.rowCount == 0) {

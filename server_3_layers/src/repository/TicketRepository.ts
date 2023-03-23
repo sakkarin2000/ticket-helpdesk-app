@@ -35,9 +35,10 @@ export class TicketRepository {
     return tickets;
   }
 
-  public async create(ticket: CreateTicketRequest): Promise<void> {
+  public async create(ticket: CreateTicketRequest): Promise<QueryResult<any>> {
     const query = 'insert into ticket (title, description, contact_info) values ($1, $2, $3);';
-    await pool.query(query, [ticket.title, ticket.description, ticket.contact_info]);
+    const result = await pool.query(query, [ticket.title, ticket.description, ticket.contact_info]);
+    return result;
   }
 
   public async update(ticket_id: string, ticket: UpdateTicketRequest): Promise<QueryResult<any>> {
