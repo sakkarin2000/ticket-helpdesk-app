@@ -14,5 +14,5 @@ export class ListTicketRequest {
   offset: number;
   @IsEnum(Status)
   @IsOptional()
-  status: any;
+  status: Status;
 }

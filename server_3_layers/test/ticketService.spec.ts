@@ -40,8 +40,7 @@ describe('Ticket Service Test', () => {
     const queryWithOutStatus: ListTicketRequest = {
       limit: 10,
       offset: 0,
-      status: undefined,
-    };
+    } as ListTicketRequest;
     const resultWithOutStatus = await service.list(queryWithOutStatus);
 
     resultWithOutStatus.data.should.be.an('array');

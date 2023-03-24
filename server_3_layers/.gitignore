@@ -40,3 +40,6 @@ dist/**/*
 
 # ignore yarn.lock
 yarn.lock
+
+#ignore nyc output
+**/.nyc_output/**/*.*

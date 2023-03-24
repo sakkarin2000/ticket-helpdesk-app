@@ -8,14 +8,14 @@ export default class TicketService {
 
   async list(listTicketRequest: ListTicketRequest) {
     let tickets: TicketEntity[] = [];
-    const hasStatusFilter = listTicketRequest.status ? true : false;
+    const hasStatusFilter = listTicketRequest.status != undefined ? true : false;
     let total = 0;
 
-    if (hasStatusFilter) {
+    if (hasStatusFilter == true) {
       tickets = await this.ticketRepo.listWithStatusFilter(listTicketRequest);
       total = await this.totalTicketWithStatusFilter(listTicketRequest.status);
     }
-    if (!hasStatusFilter) {
+    if (hasStatusFilter == false) {
       tickets = await this.ticketRepo.list(listTicketRequest);
       total = await this.totalTicket();
     }
