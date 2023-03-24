@@ -11,7 +11,6 @@ export const getData = (resource: string) => {
     [resource],
     async () => {
       const { data } = await axios.get(`/${resource}`);
-      console.log(data);
       return data;
     },
     {

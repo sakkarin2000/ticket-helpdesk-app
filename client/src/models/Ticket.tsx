@@ -1,4 +1,5 @@
 export interface Ticket {
+  [key: string]: string;
   ticket_id: string;
   title: string;
   description: string;
@@ -19,7 +20,7 @@ export interface TicketForSorting {
   [key: string]: any;
 }
 
-export interface Ticket_Meta_Data {
+export interface TicketMetaData {
   limit: number;
   offset: number;
   count: number;

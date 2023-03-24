@@ -104,7 +104,6 @@ export default function UpdateTicketModal({
                   className="block appearance-none w-full bg-white border border-[#081F3E] text-[#081F3E] py-1.5 px-4 pr-8 rounded leading-tight focus:outline-none text-[14px]"
                   id="grid-state"
                   onChange={(e) => {
-                    console.log(e.target.value);
                     handleChange(e.target.value, "status");
                   }}
                   defaultValue={ticketToEdit.status}

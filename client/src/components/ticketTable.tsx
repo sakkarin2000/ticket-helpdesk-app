@@ -1,15 +1,16 @@
 import { Observer } from "mobx-react";
 import { useEffect, useState } from "react";
-import { GrStatusGoodSmall } from "react-icons/gr";
 import { MdModeEditOutline } from "react-icons/md";
 import { getData, putData } from "../../utils/query";
 
 import {
   Ticket,
   TicketForSorting,
+  TicketMetaData,
   TicketStatusForFilter,
-  Ticket_Meta_Data,
 } from "@/models/Ticket";
+import TicketStatusWithColor from "@/models/TicketStatus";
+import { TicketToUpdateRequest } from "@/models/TicketToUpdateRequest";
 import { formatDate } from "../../utils/formatDate";
 import LoadingForTable from "./LoadingForTable";
 import UpdateTicketModal from "./modal/updateTicketModal";
@@ -18,36 +19,32 @@ interface TicketTableProps {
   count_ticket: number;
 }
 export default function TicketTable({ count_ticket }: TicketTableProps) {
-  const uniqueIds = new Set<number>();
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState("");
   const [sortByColumn, setSortByColumn] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState("DSC");
   const [ticketToEdit, setTicketToEdit] = useState<Ticket>({} as Ticket);
-  const ticket_mutation = putData(`tickets/${ticketToEdit.ticket_id}`);
   const [ticketList, setTicketList] = useState<Ticket[]>([]);
-  const [ticketMetaData, setTicketMetaData] = useState<Ticket_Meta_Data>(
-    {} as Ticket_Meta_Data
+  const [ticketMetaData, setTicketMetaData] = useState<TicketMetaData>(
+    {} as TicketMetaData
   );
   const [filterColumnChanged, setFilterColumnChanged] = useState(false);
+  const [showEditTicketModal, setShowEditTicketModal] = useState(false);
 
   const {
     data: ticketData,
     status: ticketStatus,
-    isSuccess: ticketIsSuccess,
-    isLoading: ticketIsLoading,
-    refetch: ticketRefetch,
+    refetch: RefetchTicket,
   } = getData(
     statusFilter != ""
       ? `tickets?limit=${limit}&offset=${offset}&status=${statusFilter}`
       : `tickets?limit=${limit}&offset=${offset}`
   );
-  const [showEditTicketModal, setShowEditTicketModal] = useState(false);
+  const ticket_mutation = putData(`tickets/${ticketToEdit.ticket_id}`);
 
   useEffect(() => {
     if (ticketData && ticketStatus == "success") {
-      console.log(ticketData.meta);
       if (filterColumnChanged == false) {
         const uniqueTickets = ticketData.data.filter((ticket: Ticket) => {
           // Only include tickets whose ticket_id is not already in the ticketList
@@ -60,7 +57,6 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
         setTicketList(ticketData.data);
         setFilterColumnChanged(false);
       }
-      console.log(ticketData);
 
       setTicketMetaData(ticketData.meta);
     }
@@ -68,17 +64,10 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
 
   useEffect(() => {
     if (count_ticket != ticketMetaData?.overall_total) {
-      console.log(
-        "count_ticket: " +
-          count_ticket +
-          " ticketMetaData.overall_total: " +
-          ticketMetaData?.overall_total
-      );
-
       setTicketList([]);
       setLimit(offset + limit);
       setOffset(0);
-      ticketRefetch();
+      RefetchTicket();
     }
   }, [count_ticket]);
 
@@ -87,20 +76,8 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     attribute: "title" | "description" | "status" | "contact_info"
   ) => {
     var tempTicketToEdit = ticketToEdit;
-    if (attribute == "title") {
-      tempTicketToEdit.title = value;
-    }
-    if (attribute == "description") {
-      tempTicketToEdit.description = value;
-    }
-    if (attribute == "contact_info") {
-      tempTicketToEdit.contact_info = value;
-    }
-    if (attribute == "status") {
-      tempTicketToEdit.status = value;
-    }
+    tempTicketToEdit[attribute] = value;
     setTicketToEdit(tempTicketToEdit);
-    console.log(ticketToEdit);
   };
 
   const sorting = (col: string) => {
@@ -131,12 +108,13 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
       ticketToEdit.ticket_id &&
       ticketToEdit.status
     ) {
-      ticket_mutation.mutate({
-        title: ticketToEdit.title,
-        description: ticketToEdit.description,
-        contact_info: ticketToEdit.contact_info,
-        status: ticketToEdit.status,
-      });
+      const ticketToUpdateRequest = new TicketToUpdateRequest(
+        ticketToEdit.title,
+        ticketToEdit.description,
+        ticketToEdit.contact_info,
+        ticketToEdit.status
+      );
+      ticket_mutation.mutate(ticketToUpdateRequest);
     }
   };
 
@@ -146,24 +124,16 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
       setLimit(limit + offset);
       setOffset(0);
       setShowEditTicketModal(false);
-      ticketRefetch();
+      RefetchTicket();
       ticket_mutation.reset();
     }
   }, [ticket_mutation.status]);
 
   const handleLoadMore = async () => {
-    console.log(ticketMetaData);
-    console.log(
-      "ticketMetaData.total: " +
-        ticketMetaData?.total +
-        " ticketList.length: " +
-        ticketList.length
-    );
     if (offset + 10 < ticketMetaData?.total) {
-      console.log("Loading More");
       setLimit(10);
       setOffset(offset + 10);
-      ticketRefetch();
+      RefetchTicket();
     }
   };
 
@@ -185,14 +155,13 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                     className="block appearance-none w-full bg-white border border-[#081F3E] text-[#081F3E] py-1.5 px-4 pr-8 rounded leading-tight focus:outline-none text-[14px]"
                     id="grid-state"
                     onChange={(e) => {
-                      console.log(e.target.value);
                       setFilterColumnChanged(true);
                       setSortByColumn("updated_at");
                       setTicketList([]);
                       setLimit(10);
                       setOffset(0);
                       setStatusFilter(e.target.value);
-                      ticketRefetch();
+                      RefetchTicket();
                     }}
                     defaultValue={statusFilter}
                   >
@@ -359,49 +328,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                         {formatDate(new Date(ticket.updated_at))}
                       </td>
                       <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                        {ticket.status == "Rejected" ? (
-                          <div className="flex gap-2 items-center">
-                            <div className="text-red-500 ">
-                              {" "}
-                              <GrStatusGoodSmall />
-                            </div>{" "}
-                            <a>Rejected</a>
-                          </div>
-                        ) : ticket.status == "Pending" ? (
-                          <div className="flex gap-2 items-center">
-                            <div className="text-yellow-500 ">
-                              {" "}
-                              <GrStatusGoodSmall />
-                            </div>{" "}
-                            <a>Pending</a>
-                          </div>
-                        ) : ticket.status == "Accepted" ? (
-                          <div className="flex gap-2 items-center">
-                            <div className="text-green-500 ">
-                              {" "}
-                              <GrStatusGoodSmall />
-                            </div>{" "}
-                            <a>Accepted</a>
-                          </div>
-                        ) : ticket.status == "Resolved" ? (
-                          <div className="flex gap-2 items-center">
-                            <div className="text-blue-500 ">
-                              {" "}
-                              <GrStatusGoodSmall />
-                            </div>{" "}
-                            <a>Resolved</a>
-                          </div>
-                        ) : ticket.status == "Canceled" ? (
-                          <div className="flex gap-2 items-center">
-                            <div className="text-gray-300 ">
-                              {" "}
-                              <GrStatusGoodSmall />
-                            </div>{" "}
-                            <a>Canceled</a>
-                          </div>
-                        ) : (
-                          "Unknown"
-                        )}
+                        <TicketStatusWithColor status={ticket.status} />
                       </td>
                       <td className="text-xl text-[#C10000] font-light px-6 py-4 whitespace-nowrap cursor-pointer">
                         <MdModeEditOutline

@@ -11,11 +11,11 @@ enum Status {
 export const ValidTransitions: {
   [key in Status]: Status[];
 } = {
-  Pending: ['Accepted', 'Rejected', 'Canceled'] as Status[],
-  Canceled: [] as Status[],
-  Accepted: ['Resolved'] as Status[],
-  Rejected: ['Accepted'] as Status[],
-  Resolved: [] as Status[],
+  Pending: ['Pending', 'Accepted', 'Rejected', 'Canceled'] as Status[],
+  Canceled: ['Canceled'] as Status[],
+  Accepted: ['Accepted', 'Resolved', 'Canceled'] as Status[],
+  Rejected: ['Rejected', 'Accepted'] as Status[],
+  Resolved: ['Resolved'] as Status[],
 };
 
 export class UpdateTicketRequest {
