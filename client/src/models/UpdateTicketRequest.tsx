@@ -1,4 +1,4 @@
-export class TicketToUpdateRequest {
+export class UpdateTicketRequest {
   title: string;
   description: string;
   contact_info: string;

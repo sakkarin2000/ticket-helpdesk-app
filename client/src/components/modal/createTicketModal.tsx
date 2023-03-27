@@ -1,4 +1,3 @@
-import React, { useState, useContext, useEffect } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 
 interface CreateTicketModalProps {
@@ -17,11 +16,19 @@ export default function CreateTicketModal({
 }: CreateTicketModalProps) {
   return (
     <div className="fixed top-0 bottom-0 right-0 left-0 flex justify-center items-center bg-black bg-opacity-75 z-40">
-      <div className="modal space-y-2 w-[350px] p-4 rounded-sm  shadow-2xl font-light  bg-white">
+      <div
+        role="dialog"
+        aria-labelledby="createTicketModal"
+        className="modal space-y-2 w-[350px] p-4 rounded-sm  shadow-2xl font-light  bg-white"
+      >
         <div>
           <div className="flex justify-between">
-            <h3 className="text-[1.5rem] font-semibold">Create Ticket</h3>
+            <h3 id="createTicketModal" className="text-[1.5rem] font-semibold">
+              Create Ticket
+            </h3>
             <div
+              role="button"
+              aria-labelledby="closeCreateTicketModal"
               className="icon grid place-items-center cursor-pointer hover:text-[#ff0077] transition-color"
               onClick={() => {
                 handleHideModal();
@@ -49,6 +56,7 @@ export default function CreateTicketModal({
                 </label>
               </div>
               <input
+                role="textbox"
                 type="text"
                 id="title"
                 onChange={(e) => {
@@ -63,13 +71,14 @@ export default function CreateTicketModal({
             <div className="pl-5 pr-5">
               <div className="flex gap-2">
                 <label
-                  htmlFor="username"
+                  htmlFor="description"
                   className="block text-sm text-gray-900 dark:text-white"
                 >
                   Description
                 </label>
               </div>
               <textarea
+                role="textbox"
                 id="description"
                 onBlur={(e) => {
                   handleChangeDescription(e.target.value);
@@ -89,6 +98,7 @@ export default function CreateTicketModal({
                 </label>
               </div>
               <textarea
+                role="textbox"
                 id="contactInfo"
                 onBlur={(e) => {
                   handleChangeContactInfo(e.target.value);
@@ -103,12 +113,16 @@ export default function CreateTicketModal({
               <hr />
               <div className="flex justify-between">
                 <button
+                  role="button"
+                  id="cancelCreateTicketModal"
                   className="cursor-pointer bg-gradient-to-br border border-inherit  from-gray-700 to-gray-900 py-3 px-10 w-fit rounded-full   text-white hover:bg-gradient-to-br  hover:from-white hover:to-white hover:border-1 hover:border-gray-900 hover:text-gray-900 transition-all"
                   onClick={() => handleHideModal()}
                 >
                   Cancel
                 </button>
                 <button
+                  role="button"
+                  id="confirmCreateTicketModal"
                   type="submit"
                   className="cursor-pointer bg-gradient-to-br border border-inherit  from-[#ff0077] to-[#941061] py-3 px-10 w-fit rounded-full   text-white hover:bg-gradient-to-br  hover:from-white hover:to-white hover:border-1 hover:border-[#ff0077] hover:text-[#ff0077] transition-all"
                 >

@@ -1,7 +1,6 @@
 import { Observer } from "mobx-react";
 import { useEffect, useState } from "react";
 import { MdModeEditOutline } from "react-icons/md";
-import { getData, putData } from "../../utils/query";
 
 import {
   Ticket,
@@ -10,11 +9,11 @@ import {
   TicketStatusForFilter,
 } from "@/models/Ticket";
 import TicketStatusWithColor from "@/models/TicketStatus";
-import { TicketToUpdateRequest } from "@/models/TicketToUpdateRequest";
+import { UpdateTicketRequest } from "@/models/UpdateTicketRequest";
+import { getTicketData, updateTicket } from "@/services/ticketService";
 import { formatDate } from "../../utils/formatDate";
 import LoadingForTable from "./LoadingForTable";
-import UpdateTicketModal from "./modal/updateTicketModal";
-
+import UpdateTicketModal from "./modal/UpdateTicketModal";
 interface TicketTableProps {
   count_ticket: number;
 }
@@ -36,12 +35,9 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
     data: ticketData,
     status: ticketStatus,
     refetch: RefetchTicket,
-  } = getData(
-    statusFilter != ""
-      ? `tickets?limit=${limit}&offset=${offset}&status=${statusFilter}`
-      : `tickets?limit=${limit}&offset=${offset}`
-  );
-  const ticket_mutation = putData(`tickets/${ticketToEdit.ticket_id}`);
+  } = getTicketData(limit, offset, statusFilter);
+
+  const ticket_mutation = updateTicket(ticketToEdit.ticket_id);
 
   useEffect(() => {
     if (ticketData && ticketStatus == "success") {
@@ -108,7 +104,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
       ticketToEdit.ticket_id &&
       ticketToEdit.status
     ) {
-      const ticketToUpdateRequest = new TicketToUpdateRequest(
+      const ticketToUpdateRequest = new UpdateTicketRequest(
         ticketToEdit.title,
         ticketToEdit.description,
         ticketToEdit.contact_info,
@@ -136,7 +132,35 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
       RefetchTicket();
     }
   };
-
+  const sortableColumns = [
+    { attribute: "title", label: "Title" },
+    { attribute: "description", label: "Description" },
+    { attribute: "contact_info", label: "Contact Information" },
+    { attribute: "created_at", label: "Created At" },
+    { attribute: "updated_at", label: "Latest Updated At" },
+    { attribute: "status", label: "Status" },
+  ];
+  const SortableColumns = (columns: { attribute: string; label: string }[]) => {
+    let columnsForSortingList: any[] = [];
+    columns.forEach((column) => {
+      columnsForSortingList.push(
+        <th
+          onClick={() => {
+            sorting(column.attribute);
+          }}
+          scope="col"
+          className={
+            sortByColumn == column.attribute
+              ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
+              : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
+          }
+        >
+          {column.label}
+        </th>
+      );
+    });
+    return columnsForSortingList;
+  };
   return (
     <Observer>
       {() => (
@@ -151,7 +175,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                 </div>
                 <div className="self-center relative">
                   <select
-                    aria-label="Correct answer"
+                    aria-label="Choose filter"
                     className="block appearance-none w-full bg-white border border-[#081F3E] text-[#081F3E] py-1.5 px-4 pr-8 rounded leading-tight focus:outline-none text-[14px]"
                     id="grid-state"
                     onChange={(e) => {
@@ -199,84 +223,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                   >
                     Index
                   </th>
-                  <th
-                    onClick={() => {
-                      sorting("title");
-                    }}
-                    scope="col"
-                    className={
-                      sortByColumn == "title"
-                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
-                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                    }
-                  >
-                    Title
-                  </th>
-                  <th
-                    onClick={() => {
-                      sorting("description");
-                    }}
-                    scope="col"
-                    className={
-                      sortByColumn == "description"
-                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
-                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                    }
-                  >
-                    Description
-                  </th>
-                  <th
-                    onClick={() => {
-                      sorting("contact_info");
-                    }}
-                    scope="col"
-                    className={
-                      sortByColumn == "contact_info"
-                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
-                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                    }
-                  >
-                    Contact Information
-                  </th>
-                  <th
-                    onClick={() => {
-                      sorting("created_at");
-                    }}
-                    scope="col"
-                    className={
-                      sortByColumn == "created_at"
-                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
-                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                    }
-                  >
-                    Created At
-                  </th>
-                  <th
-                    onClick={() => {
-                      sorting("updated_at");
-                    }}
-                    scope="col"
-                    className={
-                      sortByColumn == "updated_at"
-                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
-                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                    }
-                  >
-                    Latest Updated At
-                  </th>
-                  <th
-                    onClick={() => {
-                      sorting("status");
-                    }}
-                    scope="col"
-                    className={
-                      sortByColumn == "status"
-                        ? "cursor-pointer text-sm font-medium text-[#ff0077] px-6 py-4 text-left"
-                        : "cursor-pointer text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                    }
-                  >
-                    Status
-                  </th>
+                  {SortableColumns(sortableColumns)}
                   <th
                     scope="col"
                     className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
@@ -333,7 +280,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       <td className="text-xl text-[#C10000] font-light px-6 py-4 whitespace-nowrap cursor-pointer">
                         <MdModeEditOutline
                           onClick={() => {
-                            setTicketToEdit({
+                            const tempTicketToEdit: Ticket = {
                               ticket_id: ticket.ticket_id,
                               title: ticket.title,
                               description: ticket.description,
@@ -341,7 +288,8 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                               created_at: ticket.created_at,
                               updated_at: ticket.updated_at,
                               status: ticket.status,
-                            });
+                            };
+                            setTicketToEdit(tempTicketToEdit);
                             setShowEditTicketModal(true);
                           }}
                         />

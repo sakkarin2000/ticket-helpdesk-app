@@ -100,7 +100,7 @@ export default function UpdateTicketModal({
               </div>
               <div className="self-center relative">
                 <select
-                  aria-label="Correct answer"
+                  aria-label="Choose status"
                   className="block appearance-none w-full bg-white border border-[#081F3E] text-[#081F3E] py-1.5 px-4 pr-8 rounded leading-tight focus:outline-none text-[14px]"
                   id="grid-state"
                   onChange={(e) => {

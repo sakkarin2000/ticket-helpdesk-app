@@ -1,12 +1,14 @@
-import CreateTicketModal from "@/components/modal/createTicketModal";
+import { CreateTicketRequest } from "@/models/CreateTicketRequest";
+import { createTicket } from "@/services/ticketService";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useRef, useState } from "react";
-import { getData, postData } from "../../utils/query";
+import { getData } from "../../utils/query";
+import CreateTicketModal from "./modal/CreateTicketModal";
 import TicketTable from "./ticketTable";
 
 export default function LandingPage() {
   const sectionRef = useRef<null | HTMLElement>(null);
-  const mutationPOST = postData("tickets");
+  const createTicketMutation = createTicket();
   const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -25,11 +27,12 @@ export default function LandingPage() {
   const handleSubmit = (e: any) => {
     e.preventDefault();
     if (title && description && contactInfo) {
-      mutationPOST.mutate({
-        title: title,
-        description: description,
-        contact_info: contactInfo,
-      });
+      const ticketToCreate = new CreateTicketRequest(
+        title,
+        description,
+        contactInfo
+      );
+      createTicketMutation.mutate(ticketToCreate);
     }
   };
 
@@ -40,13 +43,13 @@ export default function LandingPage() {
   }, [totalTicketData, totalTicketIsSuccess]);
 
   useEffect(() => {
-    if (mutationPOST.isSuccess) {
+    if (createTicketMutation.isSuccess) {
       refetch();
       setShowCreateTicketModal(false);
       handleScrollToTicketList();
-      mutationPOST.reset();
+      createTicketMutation.reset();
     }
-  }, [mutationPOST.isSuccess]);
+  }, [createTicketMutation.isSuccess]);
 
   return (
     <>
@@ -74,6 +77,7 @@ export default function LandingPage() {
         </div>
         <div className="flex justify-center gap-5">
           <button
+            role="button"
             onClick={() => {
               setShowCreateTicketModal(true);
             }}
@@ -82,10 +86,12 @@ export default function LandingPage() {
             <p className="text-xl font-regular font-prompt">Create Ticket</p>
           </button>
           <button
+            role="button"
+            aria-label="View Tickets"
             onClick={handleScrollToTicketList}
             className="cursor-pointer  border border-[#db256f]  py-3 px-10 w-fit rounded-full   text-[#db256f] hover:text-white hover:bg-[#db256f]  hover:border-[#db256f] hover:border-1 transition-all"
           >
-            <p className="text-xl font-regular font-prompt">Views Tickets</p>
+            <p className="text-xl font-regular font-prompt">View Tickets</p>
           </button>
         </div>
         <div className="m-20 flex justify-center">
