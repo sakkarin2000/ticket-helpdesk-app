@@ -1,8 +1,7 @@
 import { CreateTicketRequest } from "@/models/CreateTicketRequest";
-import { createTicket } from "@/services/ticketService";
+import { createTicket, getTotalTicket } from "@/services/ticketService";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useRef, useState } from "react";
-import { getData } from "../../utils/query";
 import CreateTicketModal from "./modal/CreateTicketModal";
 import TicketTable from "./ticketTable";
 
@@ -18,7 +17,7 @@ export default function LandingPage() {
     data: totalTicketData,
     isSuccess: totalTicketIsSuccess,
     refetch,
-  } = getData(`total-ticket`);
+  } = getTotalTicket();
 
   const handleScrollToTicketList = () => {
     sectionRef.current?.scrollIntoView({ behavior: "smooth" });

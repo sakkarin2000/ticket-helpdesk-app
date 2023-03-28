@@ -41,7 +41,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
 
   useEffect(() => {
     if (ticketData && ticketStatus == "success") {
-      if (filterColumnChanged == false) {
+      if (filterColumnChanged == false && ticketData.data) {
         const uniqueTickets = ticketData.data.filter((ticket: Ticket) => {
           // Only include tickets whose ticket_id is not already in the ticketList
           return !ticketList.some(
@@ -214,7 +214,7 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                 </div>
               </div>
             </div>
-            <table className="min-w-full border border-gray-200">
+            <table className=" table-fixed min-w-full border border-gray-200">
               <thead className="bg-white border-b">
                 <tr>
                   <th
@@ -259,13 +259,13 @@ export default function TicketTable({ count_ticket }: TicketTableProps) {
                       <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                         {index + 1}
                       </td>
-                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-normal break-words">
                         {ticket.title}
                       </td>
-                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-normal break-words">
                         {ticket.description}
                       </td>
-                      <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                      <td className="text-sm  text-gray-900 font-light px-6 py-4 whitespace-normal break-words">
                         {ticket.contact_info}
                       </td>
                       <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">

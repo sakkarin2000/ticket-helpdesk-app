@@ -39,12 +39,16 @@ export default function UpdateTicketModal({
           <div className="">
             <div className="pl-5 pr-5">
               <div className="flex gap-2">
-                <label className="block text-sm font-regular text-bold text-gray-900 py-2 ">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-regular text-bold text-gray-900 py-2 "
+                >
                   Title
                 </label>
               </div>
               <input
                 type="text"
+                role="textbox"
                 id="title"
                 defaultValue={ticketToEdit.title}
                 onChange={(e) => {
@@ -58,12 +62,16 @@ export default function UpdateTicketModal({
 
             <div className="pl-5 pr-5">
               <div className="flex gap-2">
-                <label className="block text-sm font-regular text-bold text-gray-900 py-2 ">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-regular text-bold text-gray-900 py-2 "
+                >
                   Description
                 </label>
               </div>
               <textarea
                 id="description"
+                role="textbox"
                 defaultValue={ticketToEdit.description}
                 onChange={(e) => {
                   handleChange(e.target.value, "description");
@@ -76,12 +84,16 @@ export default function UpdateTicketModal({
 
             <div className="pl-5 pr-5 pb-5">
               <div className="flex flex-cols gap-2">
-                <label className="block text-sm font-regular text-bold text-gray-900 py-2 ">
+                <label
+                  htmlFor="contactInfo"
+                  className="block text-sm font-regular text-bold text-gray-900 py-2 "
+                >
                   Contact Information
                 </label>
               </div>
               <textarea
                 id="contactInfo"
+                role="textbox"
                 defaultValue={ticketToEdit.contact_info}
                 onChange={(e) => {
                   handleChange(e.target.value, "contact_info");
