@@ -1,36 +1,51 @@
 version: '3.9'
 
 services:
-  # backend:
-  #   build: ./server_3_layers
-  #   container_name: backend
-  #   depends_on:
-  #     - db
-  #   restart: unless-stopped
-  #   hostname: backend
-  #   tty: true
-  #   environment:
-  #     - DATABASE_URL=db
-  #     - DBUSER=helpdesk_admin
-  #     - DBPASSWORD=tick@dminP@ss
-  #   ports:
-  #     - 5001:5001
-  #   networks:
-  #     - app-network
-  #   command: npm run start
-
-  # frontend:
-  #   build: ./client
-  #   container_name: frontend
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - db
-  #   hostname: frontend
-  #   tty: true
-  #   networks:
-  #     - app-network
-  #   ports:
-  #     - 3000:3000
+  backend:
+    build: ./server_3_layers
+    container_name: backend
+    depends_on:
+      - db
+    restart: unless-stopped
+    hostname: backend
+    tty: true
+    environment:
+      - DATABASE_URL=db
+      - DBUSER=helpdesk_admin
+      - DBPASSWORD=tick@dminP@ss
+    ports:
+      - 5001:5001
+    networks:
+      - app-network
+    command: npm run start
+  nginx:
+    depends_on:
+      - backend
+      - frontend
+    image: nginx
+    container_name: nginx
+    hostname: nginx
+    volumes:
+      - ./nginx_prepare/nginx.conf:/etc/nginx/conf.d/default.conf
+      # - ../nginx_prepare/nginx-selfsigned.crt:/etc/nginx/certs/fullchain.crt
+      # - ../nginx_prepare/nginx-selfsigned.key:/etc/nginx/certs/privkey.pem
+    networks:
+      - app-network
+    ports:
+      - 80:80
+      - 443:443
+  frontend:
+    build: ./client
+    container_name: frontend
+    restart: unless-stopped
+    depends_on:
+      - db
+    hostname: frontend
+    tty: true
+    networks:
+      - app-network
+    ports:
+      - 3000:3000
 
   db:
     image:  postgres
