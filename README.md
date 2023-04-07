@@ -16,7 +16,7 @@
     ```
     
 4. Wait for all the container to build and run the services up
-5. Test the web application at localhost:3000
+5. Test the web application at localhost
 
 # **GET /api/v1/ticket**
 
